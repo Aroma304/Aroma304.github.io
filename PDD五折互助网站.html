@@ -1,0 +1,290 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDD五折互助 - 每日互助提现</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ff4400, #ff6633);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .title {
+            text-align: center;
+            color: #ff4400;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .steps {
+            background: #fff5f0;
+            border-left: 4px solid #ff4400;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        .steps h3 {
+            color: #ff4400;
+            margin-bottom: 10px;
+        }
+        
+        .steps p {
+            line-height: 1.6;
+            margin: 5px 0;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .code-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        
+        .code-input:focus {
+            border-color: #ff4400;
+            outline: none;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: #ff4400;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .submit-btn:hover {
+            background: #e63900;
+        }
+        
+        .tips {
+            background: #e8f4ff;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            color: #0066cc;
+            font-size: 14px;
+        }
+        
+        .code-list {
+            margin-top: 20px;
+        }
+        
+        .code-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #ff4400;
+        }
+        
+        .code-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .jump-btn {
+            padding: 8px 15px;
+            background: #00b42a;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .jump-btn.used {
+            background: #999;
+            cursor: not-allowed;
+        }
+        
+        .activity-info {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff9e6;
+            border-radius: 8px;
+        }
+        
+        .activity-info p {
+            color: #ff6600;
+            font-weight: bold;
+        }
+        
+        .copyright {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">PDD五折互助</div>
+        
+        <div class="steps">
+            <h3>互助步骤：</h3>
+            <p>① 输入9位邀请码提交，支持重复提交置顶；</p>
+            <p>② 列表点“跳转”自动打开拼多多搜索；</p>
+            <p>③ 微信内请手动去拼多多粘贴搜索。</p>
+        </div>
+        
+        <div class="tips">
+            💡 建议收藏本页，每天都可互助提现。
+        </div>
+        
+        <div class="form-group">
+            <label>输入9位邀请码：</label>
+            <input type="text" id="codeInput" class="code-input" maxlength="9" placeholder="请输入9位邀请码">
+        </div>
+        
+        <button class="submit-btn" onclick="submitCode()">提交邀请码</button>
+        
+        <div class="code-list" id="codeList">
+            <!-- 邀请码列表将在这里显示 -->
+        </div>
+        
+        <div class="activity-info">
+            <p>活动入口：拼多多首页 - 百亿补贴 - 百亿消费券 - 福袋</p>
+        </div>
+        
+        <div class="copyright">
+            仅供学习交流使用 © 2025
+        </div>
+    </div>
+
+    <script>
+        // 存储邀请码数据
+        let codeData = JSON.parse(localStorage.getItem('pddCodes')) || [];
+        
+        // 页面加载时渲染列表
+        window.onload = function() {
+            renderCodeList();
+        };
+        
+        // 提交邀请码
+        function submitCode() {
+            let code = document.getElementById('codeInput').value.trim();
+            
+            // 验证邀请码
+            if(code.length !== 9 || !/^\d+$/.test(code)) {
+                alert('请输入有效的9位数字邀请码！');
+                return;
+            }
+            
+            // 移除已存在的相同码，实现置顶效果
+            codeData = codeData.filter(item => item.code !== code);
+            
+            // 添加新码到顶部
+            codeData.unshift({
+                code: code,
+                used: false
+            });
+            
+            // 保存到本地存储
+            localStorage.setItem('pddCodes', JSON.stringify(codeData));
+            
+            // 清空输入框
+            document.getElementById('codeInput').value = '';
+            
+            // 重新渲染列表
+            renderCodeList();
+            
+            alert('邀请码提交成功！已置顶');
+        }
+        
+        // 渲染邀请码列表
+        function renderCodeList() {
+            let listHtml = '';
+            
+            codeData.forEach((item, index) => {
+                // 隐藏中间两位
+                let displayCode = item.code.substring(0,3) + '**' + item.code.substring(5);
+                
+                let btnText = item.used ? '已使用' : '跳转';
+                let btnClass = item.used ? 'jump-btn used' : 'jump-btn';
+                
+                listHtml += `
+                    <div class="code-item">
+                        <div class="code-text">${displayCode}</div>
+                        <button class="${btnClass}" onclick="jumpToPdd(${index})">${btnText}</button>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('codeList').innerHTML = listHtml || '<p style="text-align:center;color:#999;padding:20px;">暂无邀请码，快来提交吧！</p>';
+        }
+        
+        // 跳转到拼多多
+        function jumpToPdd(index) {
+            if(codeData[index].used) {
+                alert('该邀请码已使用！');
+                return;
+            }
+            
+            let code = codeData[index].code;
+            
+            // 标记为已使用
+            codeData[index].used = true;
+            localStorage.setItem('pddCodes', JSON.stringify(codeData));
+            renderCodeList();
+            
+            // 拼多多跳转链接
+            let pddUrl = `pinduoduo://search?keyword=${code}`;
+            
+            // 尝试跳转
+            window.location.href = pddUrl;
+            
+            // 提示用户
+            setTimeout(() => {
+                alert('已自动打开拼多多，请在拼多多中搜索使用！\n微信内请手动复制码去拼多多搜索');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
